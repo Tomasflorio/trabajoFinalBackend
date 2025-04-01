@@ -2,14 +2,14 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-import os
+
 from alembic import context
-import sys
 
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app')))
-
-from db.session import Base
+from app.core.database import Base  
+from app.models.user import Base as UserBase
+from app.models.exercice import Base as ExerciceBase
+from app.models.content import Base as ContentBase
+from app.core.database import engine  
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,8 +24,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.db.session import Base # type: ignore
-target_metadata = Base.metadata
+target_metadata = [UserBase.metadata, ExerciceBase.metadata, ContentBase.metadata]
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -45,9 +44,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    config.set_main_option("sqlalchemy.url", "mysql+pymysql://root@localhost:8080/trabajofinaldb")
-    url = config.get_main_option("sqlalchemy.url")  # Ahora esto debería darte el valor correcto
-    print(f"Connecting to database with URL: {url}")
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -80,7 +77,7 @@ def run_migrations_online() -> None:
         with context.begin_transaction():
             context.run_migrations()
 
-    
+
 if context.is_offline_mode():
     run_migrations_offline()
 else:
