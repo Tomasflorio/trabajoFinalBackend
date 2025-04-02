@@ -12,10 +12,12 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str  # La contraseña se enviará como texto plano antes de ser hasheada
-    points: Optional[int] = 0
-    isAdmin: bool
-    englishLevel: EnglishLevel
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+    
 # Esquema para leer un usuario (sin contraseña por seguridad)
 class UserRead(BaseModel):
     id: int
@@ -24,6 +26,12 @@ class UserRead(BaseModel):
     points: int
     isAdmin: bool
     englishLevel: EnglishLevel
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    isAdmin: bool  # Asegúrate de incluir los campos necesarios
 
     class Config:
         from_attributes = True  # Permite convertir desde modelos de SQLAlchemy
