@@ -1,12 +1,16 @@
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+
+load_dotenv()  # Cargar variables desde el archivo .env
+
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "mysql+aiomysql://root:@localhost/trabajofinaldb"
-    SECRET_KEY: str = "supersecretkey"
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    DATABASE_URL: str
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     class Config:
-        env_file = ".env"  # Cargar variables desde .env si existe
+        env_file = ".env"  # Indicar que debe leer desde .env
 
 settings = Settings()
