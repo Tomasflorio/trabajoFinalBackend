@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('email', sa.String(255), nullable=False),
-    sa.Column('hashed_password', sa.String(255), nullable=False),
+    sa.Column('password', sa.String(255), nullable=False),
     sa.Column('points', sa.Integer(), nullable=True),
     sa.Column('isAdmin', sa.Boolean(), nullable=False),
     sa.Column('englishLevel', sa.Enum('A1', 'A2', 'B1', 'B2', 'C1', 'C2', name='english_level'), nullable=False),

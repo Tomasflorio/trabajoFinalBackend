@@ -35,3 +35,11 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True  # Permite convertir desde modelos de SQLAlchemy
+
+class RegisterResponse(BaseModel):
+    message: str
+    user: UserResponse
+    status: int
+
+    class Config:
+        from_attributes = True
