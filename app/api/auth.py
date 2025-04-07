@@ -34,4 +34,10 @@ async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
     user = await authenticate_user(db, data.email, data.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"message": "Login successful", "status": 200}
+    user_response = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "isAdmin": user.isAdmin
+    }
+    return {"message": "Login successful", "user": user_response, "status": 200}
