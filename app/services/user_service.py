@@ -31,3 +31,30 @@ async def authenticate_user(db: Session, email: str, password: str):
     if not user or not verify_password(password, user.password):
         return None
     return user
+
+async def delete_user(db: AsyncSession, user_id: int):
+    result = await db.execute(select(User).filter(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        return None
+    
+    await db.delete(user)
+    await db.commit()
+    return user
+
+async def update_user(db: AsyncSession, user_id: int, updates: dict):
+    print('User ID:', user_id)
+    result = await db.execute(select(User).filter(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        return None
+
+    for key, value in updates.items():
+        setattr(user, key, value)
+    
+    await db.commit()
+    await db.refresh(user)
+    return user
+
