@@ -32,7 +32,7 @@ async def authenticate_user(db: Session, email: str, password: str):
         return None
     return user
 
-async def delete_user(db: AsyncSession, user_id: int):
+async def delete_user_router(db: AsyncSession, user_id: int):
     result = await db.execute(select(User).filter(User.id == user_id))
     user = result.scalar_one_or_none()
     
@@ -43,7 +43,7 @@ async def delete_user(db: AsyncSession, user_id: int):
     await db.commit()
     return user
 
-async def update_user(db: AsyncSession, user_id: int, updates: dict):
+async def update_user_router(db: AsyncSession, user_id: int, updates: dict):
     print('User ID:', user_id)
     result = await db.execute(select(User).filter(User.id == user_id))
     user = result.scalar_one_or_none()

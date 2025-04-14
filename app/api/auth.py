@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession  # Importamos AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.user_service import create_user, authenticate_user, delete_user, update_user
+from app.services.user_service import create_user, authenticate_user, delete_user_router, update_user_router
 from app.schemas.user import LoginRequest, UserCreate, RegisterResponse
 from app.models.user import User
 
@@ -45,7 +45,7 @@ async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
 
 @router.delete("/user/{user_id}")
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    user = await delete_user(db, user_id)
+    user = await delete_user_router(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted", "status": 200}
@@ -64,7 +64,7 @@ async def update_user(
 ):
     print("User ID:", user_id)
     updates = user_data.model_dump(exclude_unset=True)
-    user = await update_user(db, user_id, updates)
+    user = await update_user_router(db, user_id, updates)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User updated", "user": user, "status": 200}
