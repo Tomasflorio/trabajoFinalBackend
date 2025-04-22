@@ -52,6 +52,8 @@ async def update_user_router(db: AsyncSession, user_id: int, updates: dict):
         return None
 
     for key, value in updates.items():
+        if (key == "password"):
+            value = hash_password(value)
         setattr(user, key, value)
     
     await db.commit()
