@@ -17,10 +17,8 @@ class Exercice(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     type = Column(SQLEnum(ExerciceType, name="exercice_type"), nullable=False)
-    response = Column(String(255), unique=True, index=True, nullable=False)
+    response = Column(String(255), unique=True, nullable=False)
     content = Column(String(255), nullable=False)
     valid = Column(Boolean, nullable=False)
     value = Column(String(255), default=0)
     level = Column(SQLEnum(EnglishLevel, name="english_level"), nullable=False)
-
-    
