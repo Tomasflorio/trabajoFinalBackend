@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession  # Importamos AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.exercice_service import create_exercice_router
+from app.services.exercice_service import create_exercice_router, delete_exercice_router
 from app.schemas.exercice import ExerciceCreate, CreateExerciceResponse
 from app.models.user import User
 
@@ -24,3 +24,11 @@ async def create_exercice(exercice_data: ExerciceCreate, db: AsyncSession = Depe
         "level": new_exercice.level
     }
     return {"message": "Ejercicio creado", "exercice": exercice_response, "status": 201}
+
+
+@router.delete("/delete/{exercice_id}")
+async def delete_exercice(exercice_id: int, db: AsyncSession = Depends(get_db)):
+    exercice = await delete_exercice_router(db, exercice_id)
+    if not exercice:
+        raise HTTPException(status_code=404, detail="Exercice not found")   
+    return {"message": "Exercice deleted", "status": 200}
