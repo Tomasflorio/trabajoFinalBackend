@@ -1,9 +1,7 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Boolean,  Enum as SQLEnum
 from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
+from .base import Base
 
 class EnglishLevel(Enum):
     A1 = 'A1'

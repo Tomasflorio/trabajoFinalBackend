@@ -1,8 +1,8 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 from sqlalchemy.orm import declarative_base
+from .base import Base
 
-Base = declarative_base()
 
 class Thematic(Enum):
     ALGO = "TBD"

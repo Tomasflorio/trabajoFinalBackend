@@ -8,6 +8,9 @@ import os
 # Crear una clase base para la ORM de SQLAlchemy
 Base = declarative_base()
 
+# Importa todos los modelos aquí para que Alembic los vea
+from app.models import question, option, user, content, exercice
+
 # Definir la URL de la base de datos
 load_dotenv()
 
