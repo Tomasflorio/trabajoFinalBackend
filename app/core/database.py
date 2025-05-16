@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker
 from typing import AsyncGenerator
 from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+import os
 
 # Crear una clase base para la ORM de SQLAlchemy
 Base = declarative_base()

@@ -28,8 +28,7 @@ class ExerciceCreate(BaseModel):
     value: Optional[int] = 0
     level: EnglishLevel
 
-# Esquema para leer un ejercicio (sin mostrar contenido sensible, por ejemplo)
-class ExerciceRead(BaseModel):
+class ExerciceResponse(BaseModel):
     id: int
     type: ExerciceType
     response: str
@@ -38,5 +37,7 @@ class ExerciceRead(BaseModel):
     value: int
     level: EnglishLevel
 
-    class Config:
-        from_attributes = True  # Permite convertir desde modelos de SQLAlchemy
+class CreateExerciceResponse(BaseModel):
+    message: str
+    exercice: ExerciceResponse
+    status: int

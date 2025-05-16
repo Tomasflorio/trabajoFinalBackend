@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
+from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import pool
 
 from alembic import context
@@ -19,6 +20,10 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Asegúrate de que sqlalchemy.url esté configurado correctamente
+url = config.get_main_option("sqlalchemy.url")
+print(f"SQLAlchemy URL: {url}")  # Agrega esta línea para depurar
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -44,7 +49,6 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -63,17 +67,14 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+    connectable = AsyncEngine(engine_from_config(
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+        future=True,
+    ))
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
-
+        context.configure(connection=connection)
         with context.begin_transaction():
             context.run_migrations()
 
