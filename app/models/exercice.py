@@ -1,24 +1,38 @@
-from enum import Enum
-from sqlalchemy import Column, Integer, String, Boolean, Enum as SQLEnum
-from sqlalchemy.orm import declarative_base
-from app.models.user import EnglishLevel
+from sqlalchemy import Column, Integer, String, Enum, Boolean, Text, ForeignKey
+from sqlalchemy.orm import relationship
+from .base import Base
+import enum
 
-Base = declarative_base()
+class ExerciseType(enum.Enum):
+    listening = "Listening"
+    reading = "ReadingComprehension"
+    grammar = "Grammar"
+    writing = "Writing"
 
+class EnglishLevel(enum.Enum):
+    A1 = "A1"
+    A2 = "A2"
+    B1 = "B1"
+    B2 = "B2"
+    C1 = "C1"
+    C2 = "C2"
 
-class ExerciceType(Enum):
-    LISTENING = "LISTENING"
-    WRITING = "WRITING"
-    READING_COMPREHENTION = "READING COMPREHENTION"
-    GRAMMAR = "GRAMMAR"
+class DifficultyLevel(enum.Enum):
+    easy = "easy"
+    medium = "medium"
+    hard = "hard"
 
-class Exercice(Base):
-    __tablename__ = "exercice"
+class Exercise(Base):
+    __tablename__ = "exercises"
 
     id = Column(Integer, primary_key=True, index=True)
-    type = Column(SQLEnum(ExerciceType, name="exercice_type"), nullable=False)
-    response = Column(String(255), unique=True, nullable=False)
-    content = Column(String(255), nullable=False)
-    valid = Column(Boolean, nullable=False)
-    value = Column(String(255), default=0)
-    level = Column(SQLEnum(EnglishLevel, name="english_level"), nullable=False)
+    type = Column(Enum(ExerciseType), nullable=False)
+    level = Column(Enum(EnglishLevel), nullable=False)
+    difficulty = Column(Enum(DifficultyLevel), nullable=False)
+    points = Column(Integer, nullable=False)
+    valid = Column(Boolean, default=False)
+    instructions = Column(Text, nullable=False)
+    content_text = Column(Text)
+    content_audio_url = Column(Text)
+
+    questions = relationship("Question", back_populates="exercise", cascade="all, delete-orphan")
