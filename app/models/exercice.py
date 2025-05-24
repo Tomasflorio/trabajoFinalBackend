@@ -28,8 +28,6 @@ class Exercise(Base):
     id = Column(Integer, primary_key=True, index=True)
     type = Column(Enum(ExerciseType), nullable=False)
     level = Column(Enum(EnglishLevel), nullable=False)
-    difficulty = Column(Enum(DifficultyLevel), nullable=False)
-    points = Column(Integer, nullable=False)
     valid = Column(Boolean, default=False)
     instructions = Column(Text, nullable=False)
     content_text = Column(Text)

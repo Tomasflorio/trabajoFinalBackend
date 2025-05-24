@@ -7,6 +7,6 @@ class Option(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
-    option_text = Column(String, nullable=False)
+    option_text = Column(String(255), nullable=False)
 
     question = relationship("Question", back_populates="options")

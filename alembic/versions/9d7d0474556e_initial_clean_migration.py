@@ -1,8 +1,8 @@
-"""add question and option tables
+"""initial clean migration
 
-Revision ID: be617029744e
-Revises: 90d682ab1f33
-Create Date: 2025-05-16 15:10:04.509661
+Revision ID: 9d7d0474556e
+Revises: 
+Create Date: 2025-05-24 20:55:16.393462
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'be617029744e'
-down_revision: Union[str, None] = '90d682ab1f33'
+revision: str = '9d7d0474556e'
+down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -35,12 +35,10 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('type', sa.Enum('listening', 'reading', 'grammar', 'writing', name='exercisetype'), nullable=False),
     sa.Column('level', sa.Enum('A1', 'A2', 'B1', 'B2', 'C1', 'C2', name='englishlevel'), nullable=False),
-    sa.Column('difficulty', sa.Enum('easy', 'medium', 'hard', name='difficultylevel'), nullable=False),
-    sa.Column('points', sa.Integer(), nullable=False),
     sa.Column('valid', sa.Boolean(), nullable=True),
     sa.Column('instructions', sa.Text(), nullable=False),
     sa.Column('content_text', sa.Text(), nullable=True),
-    sa.Column('content_audio_url', sa.String(length=255), nullable=True),
+    sa.Column('content_audio_url', sa.Text(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_exercises_id'), 'exercises', ['id'], unique=False)
@@ -63,6 +61,8 @@ def upgrade() -> None:
     sa.Column('correct_answer', sa.String(length=255), nullable=True),
     sa.Column('explanation', sa.Text(), nullable=True),
     sa.Column('order', sa.Integer(), nullable=True),
+    sa.Column('points', sa.Integer(), nullable=False),
+    sa.Column('difficulty', sa.Enum('easy', 'medium', 'hard', name='difficultylevel'), nullable=False),
     sa.ForeignKeyConstraint(['exercise_id'], ['exercises.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

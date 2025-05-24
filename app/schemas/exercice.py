@@ -28,8 +28,6 @@ class DifficultyLevel(str, Enum):
 class ExerciceCreate(BaseModel):
     type: ExerciseType
     level: EnglishLevel
-    difficulty: DifficultyLevel
-    points: int
     valid: bool = False
     instructions: str
     content_text: Optional[str] = None

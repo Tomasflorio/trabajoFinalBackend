@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum
 from sqlalchemy.orm import relationship
 from app.models.base import Base
+from app.models.exercice import DifficultyLevel  # Importa el Enum
 
 class Question(Base):
     __tablename__ = "questions"
@@ -11,6 +12,8 @@ class Question(Base):
     correct_answer = Column(String(255))
     explanation = Column(Text)
     order = Column(Integer, default=0)
+    points = Column(Integer, nullable=False, default=1)  # Nuevo campo
+    difficulty = Column(Enum(DifficultyLevel), nullable=False, default="easy")  # Nuevo campo
 
     options = relationship("Option", back_populates="question", cascade="all, delete-orphan")
     exercise = relationship("Exercise", back_populates="questions")
