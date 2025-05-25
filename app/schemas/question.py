@@ -1,6 +1,12 @@
+from enum import Enum
 from pydantic import BaseModel
 from typing import Optional, List
-from app.schemas.exercice import DifficultyLevel
+
+class DifficultyLevel(str, Enum):
+    easy = "easy"
+    medium = "medium"
+    hard = "hard"
+
 
 class QuestionCreate(BaseModel):
     question_text: str

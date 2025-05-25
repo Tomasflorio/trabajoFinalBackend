@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 from typing import Optional, List
-from app.schemas.question import QuestionOut  # Asegurate de importar esto
+from app.schemas.question import QuestionOut
 
 class ExerciseType(str, Enum):
     listening = "Listening"
@@ -19,10 +19,6 @@ class EnglishLevel(str, Enum):
     C1 = "C1"
     C2 = "C2"
 
-class DifficultyLevel(str, Enum):
-    easy = "easy"
-    medium = "medium"
-    hard = "hard"
 
 
 class ExerciceCreate(BaseModel):
