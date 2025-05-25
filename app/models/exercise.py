@@ -4,10 +4,10 @@ from .base import Base
 import enum
 
 class ExerciseType(enum.Enum):
-    listening = "Listening"
-    reading = "ReadingComprehension"
-    grammar = "Grammar"
-    writing = "Writing"
+    listening = "listening"
+    reading = "reading"
+    grammar = "grammar"
+    writing = "writing"
 
 class EnglishLevel(enum.Enum):
     A1 = "A1"

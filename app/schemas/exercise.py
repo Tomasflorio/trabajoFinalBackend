@@ -6,10 +6,10 @@ from typing import Optional, List
 from app.schemas.question import QuestionOut
 
 class ExerciseType(str, Enum):
-    listening = "Listening"
-    reading = "ReadingComprehension"
-    grammar = "Grammar"
-    writing = "Writing"
+    listening = "listening"
+    reading = "reading"
+    grammar = "grammar"
+    writing = "writing"
 
 class EnglishLevel(str, Enum):
     A1 = "A1"
@@ -21,7 +21,7 @@ class EnglishLevel(str, Enum):
 
 
 
-class ExerciceCreate(BaseModel):
+class exerciseCreate(BaseModel):
     type: ExerciseType
     level: EnglishLevel
     valid: bool = False
@@ -30,22 +30,20 @@ class ExerciceCreate(BaseModel):
     content_audio_url: Optional[str] = None
 
 
-class CreateExerciceResponse(BaseModel):
+class CreateexerciseResponse(BaseModel):
     message: str
-    exercice: dict
+    exercise: dict
     status: int
 
-class ExerciceResponse(BaseModel):
+class exerciseResponse(BaseModel):
     message: str
-    exercice: dict
+    exercise: dict
     status: int
 
-class ExerciceFullOut(BaseModel):
+class exerciseFullOut(BaseModel):
     id: int
     type: str
     level: str
-    difficulty: str
-    points: int
     valid: bool
     instructions: str
     content_text: Optional[str]

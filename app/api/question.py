@@ -23,6 +23,8 @@ async def create_question(exercise_id: int, question: QuestionCreate, db: AsyncS
         correct_answer=question_with_options.correct_answer,
         explanation=question_with_options.explanation,
         order=question_with_options.order,
+        points=question_with_options.points,  # <-- agrega esto
+        difficulty=question_with_options.difficulty,  # <-- agrega esto
         options=[opt.option_text for opt in question_with_options.options]
     )
 
@@ -36,6 +38,8 @@ async def list_questions_by_exercise(exercise_id: int, db: AsyncSession = Depend
             correct_answer=q.correct_answer,
             explanation=q.explanation,
             order=q.order,
+            points=q.points,  # <-- agrega esto
+            difficulty=q.difficulty,  # <-- agrega esto
             options=[opt.option_text for opt in q.options]
         )
         for q in questions

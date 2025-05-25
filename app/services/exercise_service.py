@@ -1,12 +1,12 @@
-from app.models.exercice import Exercise
-from app.schemas.exercise import ExerciceCreate
+from app.models.exercise import Exercise
+from app.schemas.exercise import exerciseCreate
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from app.models.question import Question
 
 
-async def create_exercise_router(db: AsyncSession, data: ExerciceCreate):
+async def create_exercise_router(db: AsyncSession, data: exerciseCreate):
     new_ex = Exercise(**data.dict())
     db.add(new_ex)
     await db.commit()

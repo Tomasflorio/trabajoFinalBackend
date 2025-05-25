@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, Enum
 from sqlalchemy.orm import relationship
 from app.models.base import Base
-from app.models.exercice import DifficultyLevel  # Importa el Enum
+from app.models.exercise import DifficultyLevel  # Importa el Enum
 
 class Question(Base):
     __tablename__ = "questions"
