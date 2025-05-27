@@ -43,3 +43,40 @@ async def get_full_exercise(db: AsyncSession, exercise_id: int):
     )
     exercise = result.scalar_one_or_none()
     return exercise
+
+async def get_all_exercises(db: AsyncSession):
+    result = await db.execute(
+        select(Exercise)
+        .options(selectinload(Exercise.questions).selectinload(Question.options))
+        .order_by(Exercise.id)
+    )
+    exercises = result.scalars().all()
+    
+    # Convertir los ejercicios al formato esperado
+    formatted_exercises = []
+    for exercise in exercises:
+        formatted_questions = []
+        for question in exercise.questions:
+            formatted_questions.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'correct_answer': question.correct_answer,
+                'explanation': question.explanation,
+                'order': question.order,
+                'points': question.points,
+                'difficulty': question.difficulty,
+                'options': [opt.option_text for opt in question.options]  # Convertir objetos Option a strings
+            })
+        
+        formatted_exercises.append({
+            'id': exercise.id,
+            'type': exercise.type.value,
+            'level': exercise.level.value,
+            'valid': exercise.valid,
+            'instructions': exercise.instructions,
+            'content_text': exercise.content_text,
+            'content_audio_url': exercise.content_audio_url,
+            'questions': formatted_questions
+        })
+    
+    return formatted_exercises

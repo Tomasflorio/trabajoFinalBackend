@@ -5,10 +5,12 @@ from app.services.exercise_service import (
     create_exercise_router,
     delete_exercise_router,
     get_full_exercise,
-    update_exercise_router
+    update_exercise_router,
+    get_all_exercises
 )
 from app.schemas.exercise import exerciseCreate, exerciseFullOut, exerciseResponse
-router = APIRouter()
+from typing import List
+
 router = APIRouter()
 
 @router.post("/create", response_model=exerciseResponse)
@@ -16,7 +18,7 @@ async def create_exercise(exercise_data: exerciseCreate, db: AsyncSession = Depe
     new_exercise = await create_exercise_router(db, exercise_data)
     return {
         "message": "Ejercicio creado",
-        "exercise": {  # Cambia 'exercise' por 'exercise'
+        "exercise": {  
             "id": new_exercise.id,
             "type": new_exercise.type.value if hasattr(new_exercise.type, "value") else str(new_exercise.type),
             "level": new_exercise.level.value if hasattr(new_exercise.level, "value") else str(new_exercise.level),
@@ -41,7 +43,12 @@ async def update_exercise(exercise_id: int, exercise_data: exerciseCreate, db: A
     updated = await update_exercise_router(db, exercise_id, updates)
     if not updated:
         raise HTTPException(status_code=404, detail="Exercise not found")
-    return {"message": "Exercise updated", "exercise": updated, "status": 200}  # <--- aquí
+    return {"message": "Exercise updated", "exercise": updated, "status": 200}  
+
+@router.get("/", response_model=List[exerciseFullOut])
+async def list_exercises(db: AsyncSession = Depends(get_db)):
+    exercises = await get_all_exercises(db)
+    return exercises
 
 @router.get("/{exercise_id}/full", response_model=exerciseFullOut)
 async def get_exercise_with_questions(exercise_id: int, db: AsyncSession = Depends(get_db)):
