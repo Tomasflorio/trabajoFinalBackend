@@ -3,6 +3,8 @@ from sqlalchemy.future import select
 from app.models.question import Question
 from app.models.option import Option
 from app.schemas.question import QuestionCreate
+from typing import List
+from sqlalchemy.orm import selectinload
 
 
 async def create_question_service(db: AsyncSession, exercise_id: int, question_data: QuestionCreate):
@@ -32,3 +34,19 @@ async def get_questions_by_exercise(db: AsyncSession, exercise_id: int):
         select(Question).filter_by(exercise_id=exercise_id).order_by(Question.order)
     )
     return result.scalars().all()
+
+async def add_options_to_question(db: AsyncSession, question_id: int, options: List[str]):
+    """Agrega opciones a una pregunta existente."""
+    for opt_text in options:
+        new_option = Option(question_id=question_id, option_text=opt_text)
+        db.add(new_option)
+    
+    await db.commit()
+    
+    # Recargar la pregunta con sus opciones
+    result = await db.execute(
+        select(Question)
+        .options(selectinload(Question.options))
+        .where(Question.id == question_id)
+    )
+    return result.scalar_one()

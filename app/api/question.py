@@ -2,12 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
+from typing import List
+from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.services.question_service import create_question_service, get_questions_by_exercise
+from app.services.question_service import create_question_service, get_questions_by_exercise, add_options_to_question
 from app.schemas.question import QuestionCreate, QuestionOut
 
 router = APIRouter()
+
+class OptionsCreate(BaseModel):
+    options: List[str]
 
 @router.post("/create/{exercise_id}", response_model=QuestionOut)
 async def create_question(exercise_id: int, question: QuestionCreate, db: AsyncSession = Depends(get_db)):
@@ -44,3 +49,22 @@ async def list_questions_by_exercise(exercise_id: int, db: AsyncSession = Depend
         )
         for q in questions
     ]
+
+@router.post("/{question_id}/options", response_model=QuestionOut)
+async def add_options_to_question_endpoint(
+    question_id: int,
+    options_data: OptionsCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """Agrega opciones a una pregunta existente."""
+    question = await add_options_to_question(db, question_id, options_data.options)
+    return QuestionOut(
+        id=question.id,
+        question_text=question.question_text,
+        correct_answer=question.correct_answer,
+        explanation=question.explanation,
+        order=question.order,
+        points=question.points,
+        difficulty=question.difficulty,
+        options=[opt.option_text for opt in question.options]
+    )

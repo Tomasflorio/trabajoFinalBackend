@@ -1,6 +1,6 @@
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Boolean,  Enum as SQLEnum
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from .base import Base
 
 class EnglishLevel(Enum):
@@ -21,3 +21,6 @@ class User(Base):
     points = Column(Integer, default=0)
     isAdmin = Column(Boolean, nullable=False)
     englishLevel = Column(SQLEnum(EnglishLevel, name="english_level"), nullable=True)
+
+    # Relaciones
+    exercise_responses = relationship("UserExerciseResponse", back_populates="user", cascade="all, delete-orphan")

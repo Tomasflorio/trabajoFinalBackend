@@ -9,7 +9,7 @@ import os
 Base = declarative_base()
 
 # Importa todos los modelos aquí para que Alembic los vea
-from app.models import question, option, user, content, exercise
+from app.models import question, option, user, content, exercise, user_exercise_response, user_answer
 
 # Definir la URL de la base de datos
 load_dotenv()
