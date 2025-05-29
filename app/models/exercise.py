@@ -26,6 +26,7 @@ class Exercise(Base):
     __tablename__ = "exercises"
 
     id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
     type = Column(Enum(ExerciseType), nullable=False)
     level = Column(Enum(EnglishLevel), nullable=False)
     valid = Column(Boolean, default=False)

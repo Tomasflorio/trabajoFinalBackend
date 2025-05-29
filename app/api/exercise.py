@@ -20,6 +20,7 @@ async def create_exercise(exercise_data: exerciseCreate, db: AsyncSession = Depe
         "message": "Ejercicio creado",
         "exercise": {  
             "id": new_exercise.id,
+            "title": new_exercise.title,
             "type": new_exercise.type.value if hasattr(new_exercise.type, "value") else str(new_exercise.type),
             "level": new_exercise.level.value if hasattr(new_exercise.level, "value") else str(new_exercise.level),
             "valid": new_exercise.valid,

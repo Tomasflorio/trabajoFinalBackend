@@ -22,6 +22,7 @@ class EnglishLevel(str, Enum):
 
 
 class exerciseCreate(BaseModel):
+    title: str
     type: ExerciseType
     level: EnglishLevel
     valid: bool = False
