@@ -59,6 +59,7 @@ async def get_exercise_with_questions(exercise_id: int, db: AsyncSession = Depen
 
     return exerciseFullOut(
         id=exercise.id,
+        title=exercise.title,
         type=exercise.type,
         level=exercise.level,
         valid=exercise.valid,

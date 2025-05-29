@@ -43,6 +43,7 @@ class exerciseResponse(BaseModel):
 
 class exerciseFullOut(BaseModel):
     id: int
+    title: str
     type: str
     level: str
     valid: bool

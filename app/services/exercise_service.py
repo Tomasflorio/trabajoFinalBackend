@@ -70,6 +70,7 @@ async def get_all_exercises(db: AsyncSession):
         
         formatted_exercises.append({
             'id': exercise.id,
+            'title': exercise.title,
             'type': exercise.type.value,
             'level': exercise.level.value,
             'valid': exercise.valid,
