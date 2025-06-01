@@ -8,6 +8,7 @@ class ExerciseType(enum.Enum):
     reading = "reading"
     grammar = "grammar"
     writing = "writing"
+    vocabulary = "vocabulary"
 
 class EnglishLevel(enum.Enum):
     A1 = "A1"

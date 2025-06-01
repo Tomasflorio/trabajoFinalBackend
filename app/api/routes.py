@@ -5,6 +5,7 @@ from app.api import user
 from app.api import auth
 from app.api import exercise
 from app.api import exercise_response
+from app.api import iaGenerartion
 
 router = APIRouter()
 
@@ -18,3 +19,4 @@ router.include_router(exercise.router, prefix="/exercise", tags=["Exercise"])  #
 router.include_router(user.router, prefix="/user", tags=["User"])
 router.include_router(question.router, prefix="/questions", tags=["Questions"])
 router.include_router(exercise_response.router, prefix="/exercise", tags=["Exercise Responses"])
+router.include_router(iaGenerartion.router, prefix="/ia", tags=["iaGeneration"])

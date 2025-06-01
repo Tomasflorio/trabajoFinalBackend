@@ -10,6 +10,7 @@ class ExerciseType(str, Enum):
     reading = "reading"
     grammar = "grammar"
     writing = "writing"
+    vocabulary = "vocabulary"
 
 class EnglishLevel(str, Enum):
     A1 = "A1"
