@@ -1,8 +1,12 @@
 from openai import OpenAI
 import os
 import json
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.exercise import Exercise
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
-def generatePrompt(exercise_type, english_level, title, userRequest, valid=False):
+def generateExercisePrompt(exercise_type, english_level, title, userRequest, valid=False):
     
     if (exercise_type != "listening"):
         prompt = f"""
@@ -43,7 +47,7 @@ async def generateListeningExerciceAndAudio():
 async def generate_exercise(exercise_type, english_level, title, userRequested):
     client = OpenAI( api_key=os.getenv("OPENAI_API_KEY"))
     if (exercise_type != "listening"):
-        prompt = generatePrompt(exercise_type,english_level,title,userRequested)
+        prompt = generateExercisePrompt(exercise_type,english_level,title,userRequested)
         response = client.chat.completions.create(
             model="gpt-4.1",  
             messages=[
@@ -57,3 +61,60 @@ async def generate_exercise(exercise_type, english_level, title, userRequested):
     else:
         response = await generateListeningExerciceAndAudio()
         return response
+
+
+def generateQuestionPrompt(exercise_type, english_level, userRequested, instructions, content_text, cantidad, tipoRespuesta, dificultad, preguntasExistentes):
+    prompt = f"""
+    Quiero que generes {cantidad} preguntas o consigas en ingles que tengan coherencia con estas instrucciones: {instructions} y el contenido del ejercicio: {content_text}, ademas el usuario solicita que las preguntas se formen siguiendo este mensaje: {userRequested}, el ejercicio es de tipo: {exercise_type} y nivel: {english_level} 
+    estas pueden ser de {tipoRespuesta}, deben ser de una dificultad {dificultad} y deben ser en formato JSON. 
+    No generes preguntas que ya existan en la siguiente lista: {preguntasExistentes}
+    Siguiendo esta estructura:
+
+
+    {{
+        "question_text": "[texto de la pregunta o consigna]",
+        "correct_answer": "[respuesta correcta]",
+        "explanation": "[explicación de la respuesta correcta]",
+        "order": [número de orden de la pregunta],
+        "points": [puntos que se podrian asignar a la pregunta estos tienen que ser enteros, positivos y entre 50 y 100 teniendo en cuenta que entre 20 y 50 es es lo que se deberia valer a una pregunta de nivel facil, entre 50 y 75 una pregunta de nivel medio y entre 75 y 100 una pregunta de nivel dificil]",
+        "difficulty": "[nivel de dificultad de la pregunta, puede ser easy, medium o hard]",
+        "options": "[Esto es una lista de opciones de respuesta, si es una pregunta de opción múltiple en caso de que sea de texto libre dejalo vacio, debe seguir la siguiente estructura: {{"option_text": "[texto de la opción]", "is_correct": [booleano que indica si es la respuesta correcta]}}]"
+        }}]"
+    """
+    return prompt
+
+
+async def generate_question(cantidad, response_type, question_difficulty, userRequested, exercise_id, db: AsyncSession):
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    # Obtener el ejercicio con sus preguntas usando selectinload
+    stmt = select(Exercise).options(
+        selectinload(Exercise.questions)
+    ).where(Exercise.id == exercise_id)
+    
+    result = await db.execute(stmt)
+    exercise = result.scalar_one_or_none()
+    
+    if not exercise:
+        raise ValueError(f"Exercise with id {exercise_id} not found")
+    
+    exercise_type = exercise.type
+    english_level = exercise.level
+    instructions = exercise.instructions
+    content_text = exercise.content_text
+    existing_questions = exercise.questions
+
+    prompt = generateQuestionPrompt(exercise_type, english_level, userRequested, instructions, content_text, cantidad, response_type, question_difficulty, existing_questions)
+    
+    response = client.chat.completions.create(
+        model="gpt-4.1",  
+        messages=[
+            {"role": "system", "content": "Eres un generador de ejercicios educativos en JSON."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7
+    )
+    
+    output = response.choices[0].message.content.strip()
+    question_json = json.loads(output)
+    return question_json
