@@ -7,7 +7,8 @@ from app.services.exercise_service import (
     delete_exercise_router,
     get_full_exercise,
     update_exercise_router,
-    get_all_exercises
+    get_all_exercises,
+    get_exercises_by_type_router
 )
 from app.schemas.exercise import (
     exerciseCreate,
@@ -114,3 +115,9 @@ async def get_exercise(exercise_id: int, db: AsyncSession = Depends(get_db)):
 async def get_exercises(db: AsyncSession = Depends(get_db)):
     exercises = await get_all_exercises(db)
     return exercises
+
+@router.get("/bytype/{exercise_type}", response_model=List[exerciseResponse])
+async def get_exercises_by_type(exercise_type: str, db: AsyncSession = Depends(get_db)):
+    exercises = await get_exercises_by_type_router(db, exercise_type)
+    return exercises
+

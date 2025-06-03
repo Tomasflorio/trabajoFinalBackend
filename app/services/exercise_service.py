@@ -152,3 +152,45 @@ async def get_all_exercises(db: AsyncSession):
         })
     
     return formatted_exercises
+
+async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
+    result = await db.execute(
+        select(Exercise)
+        .options(selectinload(Exercise.questions).selectinload(Question.options))
+        .filter_by(type=exercise_type)
+    )
+    exercises = result.scalars().all()
+    
+    # Convertir los ejercicios al formato esperado
+    formatted_exercises = []
+    for exercise in exercises:
+        formatted_questions = []
+        for question in exercise.questions:
+            formatted_questions.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'correct_answer': question.correct_answer,
+                'explanation': question.explanation,
+                'order': question.order,
+                'points': question.points,
+                'difficulty': question.difficulty,
+                'options': [opt.option_text for opt in question.options]  # Convertir objetos Option a strings
+            })
+        
+        formatted_exercises.append({
+            'message': 'Ejercicio encontrado',
+            'exercise': {
+                'id': exercise.id,
+                'title': exercise.title,
+                'type': exercise.type.value,
+                'level': exercise.level.value,
+                'valid': exercise.valid,
+                'instructions': exercise.instructions,
+                'content_text': exercise.content_text,
+                'content_audio_url': exercise.content_audio_url,
+                'questions': formatted_questions
+            },
+            'status': 200
+        })
+    
+    return formatted_exercises
