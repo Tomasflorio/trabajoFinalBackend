@@ -1,9 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel
 from typing import Optional, List
-from app.schemas.question import QuestionOut
+from app.schemas.question import QuestionOut, QuestionCreate
 
 class ExerciseType(str, Enum):
     listening = "listening"
@@ -20,8 +18,6 @@ class EnglishLevel(str, Enum):
     C1 = "C1"
     C2 = "C2"
 
-
-
 class exerciseCreate(BaseModel):
     title: str
     type: ExerciseType
@@ -30,7 +26,7 @@ class exerciseCreate(BaseModel):
     instructions: str
     content_text: Optional[str] = None
     content_audio_url: Optional[str] = None
-
+    questions: List[QuestionCreate] = []
 
 class CreateexerciseResponse(BaseModel):
     message: str

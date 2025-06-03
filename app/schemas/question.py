@@ -7,6 +7,9 @@ class DifficultyLevel(str, Enum):
     medium = "medium"
     hard = "hard"
 
+class OptionCreate(BaseModel):
+    option_text: str
+    is_correct: bool = False
 
 class QuestionCreate(BaseModel):
     question_text: str
@@ -15,7 +18,7 @@ class QuestionCreate(BaseModel):
     order: Optional[int] = 0
     points: int = 1
     difficulty: DifficultyLevel = DifficultyLevel.easy
-    options: Optional[List[str]] = []
+    options: List[OptionCreate] = []
 
 class QuestionOut(BaseModel):
     id: int
