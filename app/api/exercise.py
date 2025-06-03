@@ -13,7 +13,8 @@ from app.services.exercise_service import (
 from app.schemas.exercise import (
     exerciseCreate,
     exerciseResponse,
-    CreateexerciseResponse
+    CreateexerciseResponse,
+    exerciseFullOut
 )
 from typing import List
 from pydantic import BaseModel
@@ -111,10 +112,17 @@ async def get_exercise(exercise_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Exercise not found")
     return exercise
 
-@router.get("/", response_model=List[exerciseResponse])
+@router.get("/", response_model=List[exerciseFullOut])
 async def get_exercises(db: AsyncSession = Depends(get_db)):
-    exercises = await get_all_exercises(db)
-    return exercises
+    try:
+        exercises = await get_all_exercises(db)
+        return exercises
+    except Exception as e:
+        logger.error(f"Error al obtener ejercicios: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al obtener ejercicios: {str(e)}"
+        )
 
 @router.get("/bytype/{exercise_type}", response_model=List[exerciseResponse])
 async def get_exercises_by_type(exercise_type: str, db: AsyncSession = Depends(get_db)):
