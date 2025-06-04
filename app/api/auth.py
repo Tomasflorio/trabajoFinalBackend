@@ -25,7 +25,8 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
         "id": new_user.id,
         "name": new_user.name,
         "email": new_user.email,
-        "isAdmin": new_user.isAdmin
+        "isAdmin": new_user.isAdmin,
+        "englishLevel": new_user.englishLevel
     }
 
     return {"message": "Register successful", "user": user_response, "status": 201}
@@ -39,6 +40,7 @@ async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
         "id": user.id,
         "name": user.name,
         "email": user.email,
-        "isAdmin": user.isAdmin
+        "isAdmin": user.isAdmin,
+        "englishLevel": user.englishLevel
     }
     return {"message": "Login successful", "user": user_response, "status": 200}
