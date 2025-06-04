@@ -166,6 +166,12 @@ async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
     for exercise in exercises:
         formatted_questions = []
         for question in exercise.questions:
+            options = []
+            for option in question.options:
+                options.append({
+                    'option_text': option.option_text,
+                    'is_correct': option.is_correct
+                })
             formatted_questions.append({
                 'id': question.id,
                 'question_text': question.question_text,
@@ -174,7 +180,7 @@ async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
                 'order': question.order,
                 'points': question.points,
                 'difficulty': question.difficulty,
-                'options': [opt.option_text for opt in question.options]  # Convertir objetos Option a strings
+                'options': options
             })
         
         formatted_exercises.append({

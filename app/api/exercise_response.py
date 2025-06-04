@@ -4,7 +4,8 @@ from app.core.database import get_db
 from app.services.exercise_response_service import (
     create_exercise_response,
     get_user_exercise_responses,
-    get_exercise_response
+    get_exercise_response,
+    update_user_level
 )
 from app.schemas.exercise_response import (
     UserExerciseResponseCreate,
@@ -38,6 +39,17 @@ async def get_user_responses(
     """
     responses = await get_user_exercise_responses(db, user_id)
     return responses
+
+@router.get("/responses/setuserlevel/{user_id}")
+async def set_user_level_endpoint(
+    user_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Establecer el nivel de un usuario
+    """
+    await update_user_level(db, user_id)
+    return {"message": "Nivel de inglés actualizado"}
 
 @router.get("/responses/{response_id}", response_model=UserExerciseResponseRead)
 async def get_response(

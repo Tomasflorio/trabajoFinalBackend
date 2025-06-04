@@ -5,6 +5,7 @@ from app.models.user_exercise_response import UserExerciseResponse
 from app.models.user_answer import UserAnswer
 from app.models.question import Question
 from app.models.option import Option
+from app.models.user import User
 from app.schemas.exercise_response import UserExerciseResponseCreate
 from typing import List
 import re
@@ -172,3 +173,58 @@ async def get_exercise_response(
         .where(UserExerciseResponse.id == response_id)
     )
     return result.scalar_one_or_none() 
+
+async def update_user_level(
+    db: AsyncSession,
+    user_id: int
+):
+    result = await db.execute(
+        select(User)
+        .where(User.id == user_id)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        return None
+        
+    # Obtener la última respuesta del usuario
+    user_points_query = await db.execute(
+        select(UserExerciseResponse)
+        .where(UserExerciseResponse.user_id == user_id)
+        .order_by(UserExerciseResponse.submitted_at.desc())
+    )
+    total_points = user_points_query.scalars().all()
+    total_points = sum(response.score for response in total_points)
+    
+    
+    if not total_points:
+        return user
+        
+    points = total_points
+    
+    if points <= 300:
+        user.englishLevel = 'A1'
+    elif points <= 600:
+        user.englishLevel = 'A2'
+    elif points <= 900:
+        user.englishLevel = 'B1'
+    elif points <= 1200:
+        user.englishLevel = 'B2'
+    elif points <= 1500:
+        user.englishLevel = 'C1'
+    else:
+        user.englishLevel = 'C2'
+            
+    await db.commit()
+    
+    return user
+
+# Rangos de puntos para cada nivel
+CONST_LEVELS_RANGES = {
+    'A1': (0, 300),
+    'A2': (301, 600),
+    'B1': (601, 900),
+    'B2': (901, 1200),
+    'C1': (1201, 1500),
+    'C2': (1501, float('inf'))
+}
