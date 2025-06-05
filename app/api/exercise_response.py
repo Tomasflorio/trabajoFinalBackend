@@ -48,8 +48,8 @@ async def set_user_level_endpoint(
     """
     Establecer el nivel de un usuario
     """
-    await update_user_level(db, user_id)
-    return {"message": "Nivel de inglés actualizado"}
+    user = await update_user_level(db, user_id)
+    return {"message": "Nivel de inglés actualizado", "englishLevel": user.englishLevel}
 
 @router.get("/responses/{response_id}", response_model=UserExerciseResponseRead)
 async def get_response(
