@@ -64,23 +64,44 @@ async def generate_exercise(exercise_type, english_level, title, userRequested):
 
 
 def generateQuestionPrompt(exercise_type, english_level, userRequested, instructions, content_text, cantidad, tipoRespuesta, dificultad, preguntasExistentes):
-    prompt = f"""
-    Quiero que generes {cantidad} preguntas o consigas en ingles que tengan coherencia con estas instrucciones: {instructions} y el contenido del ejercicio: {content_text}, ademas el usuario solicita que las preguntas se formen siguiendo este mensaje: {userRequested}, el ejercicio es de tipo: {exercise_type} y nivel: {english_level} 
-    estas pueden ser de {tipoRespuesta}, deben ser de una dificultad {dificultad} y deben ser en formato JSON. 
-    No generes preguntas que ya existan en la siguiente lista: {preguntasExistentes}
-    Siguiendo esta estructura:
-
-
-    {{
-        "question_text": "[texto de la pregunta o consigna]",
-        "correct_answer": "[respuesta correcta]",
-        "explanation": "[explicación de la respuesta correcta]",
-        "order": [número de orden de la pregunta],
-        "points": [puntos que se podrian asignar a la pregunta estos tienen que ser enteros, positivos y entre 50 y 100 teniendo en cuenta que entre 20 y 50 es es lo que se deberia valer a una pregunta de nivel facil, entre 50 y 75 una pregunta de nivel medio y entre 75 y 100 una pregunta de nivel dificil]",
-        "difficulty": "[nivel de dificultad de la pregunta, puede ser easy, medium o hard]",
-        "options": "[Esto es una lista de opciones de respuesta, si es una pregunta de opción múltiple en caso de que sea de texto libre dejalo vacio, debe seguir la siguiente estructura: {{"option_text": "[texto de la opción]", "is_correct": [booleano que indica si es la respuesta correcta]}}]"
-        }}]"
-    """
+    prompt = ""
+    if (content_text != None):
+        prompt = f"""
+        Quiero que generes {cantidad} preguntas o consigas en ingles que tengan coherencia con estas instrucciones: {instructions} y el contenido del ejercicio: {content_text}, ademas el usuario solicita que las preguntas se formen siguiendo este mensaje: {userRequested}, el ejercicio es de tipo: {exercise_type} y nivel: {english_level} 
+        estas pueden ser de {tipoRespuesta}, deben ser de una dificultad {dificultad} y deben ser en formato JSON. 
+        No generes preguntas que ya existan en la siguiente lista: {preguntasExistentes}
+        Siguiendo esta estructura:
+        [
+        {{
+            "question_text": "[texto de la pregunta o consigna]",
+            "correct_answer": "[respuesta correcta]",
+            "explanation": "[explicación de la respuesta correcta]",
+            "order": [número de orden de la pregunta],
+            "points": [puntos que se podrian asignar a la pregunta estos tienen que ser enteros, positivos y entre 50 y 100 teniendo en cuenta que entre 20 y 50 es es lo que se deberia valer a una pregunta de nivel facil, entre 50 y 75 una pregunta de nivel medio y entre 75 y 100 una pregunta de nivel dificil]",
+            "difficulty": "[nivel de dificultad de la pregunta, puede ser easy, medium o hard]",
+            "options": "[Esto es una lista de opciones de respuesta, si es una pregunta de opción múltiple en caso de que sea de texto libre dejalo vacio, debe seguir la siguiente estructura: {{"option_text": "[texto de la opción]", "is_correct": [booleano que indica si es la respuesta correcta]}}]"
+            }}]"
+        ]
+        """
+    else:
+        prompt = f"""
+        Quiero que generes {cantidad} preguntas o consigas en ingles que tengan coherencia con estas instrucciones: {instructions}, ademas el usuario solicita que las preguntas se formen siguiendo este mensaje: {userRequested}, el ejercicio es de tipo: {exercise_type} y nivel: {english_level} 
+        estas pueden ser de {tipoRespuesta}, deben ser de una dificultad {dificultad} y deben ser en formato JSON. 
+        No generes preguntas que ya existan en la siguiente lista: {preguntasExistentes}
+        Siguiendo esta estructura:
+        [
+        {{
+            "question_text": "[texto de la pregunta o consigna]",
+            "correct_answer": "[respuesta correcta]",
+            "explanation": "[explicación de la respuesta correcta]",
+            "order": [número de orden de la pregunta],
+            "points": [puntos que se podrian asignar a la pregunta estos tienen que ser enteros, positivos y entre 50 y 100 teniendo en cuenta que entre 20 y 50 es es lo que se deberia valer a una pregunta de nivel facil, entre 50 y 75 una pregunta de nivel medio y entre 75 y 100 una pregunta de nivel dificil]",
+            "difficulty": "[nivel de dificultad de la pregunta, puede ser easy, medium o hard]",
+            "options": "[Esto es una lista de opciones de respuesta, si es una pregunta de opción múltiple en caso de que sea de texto libre dejalo vacio, debe seguir la siguiente estructura: {{"option_text": "[texto de la opción]", "is_correct": [booleano que indica si es la respuesta correcta]}}]"
+            }}]"
+        ]
+        """
+    
     return prompt
 
 
@@ -104,7 +125,13 @@ async def generate_question(cantidad, response_type, question_difficulty, userRe
     content_text = exercise.content_text
     existing_questions = exercise.questions
 
+    if (exercise_type == "listening"):
+        raise NotImplementedError("Listening exercises are not implemented yet")
+        return None
+
     prompt = generateQuestionPrompt(exercise_type, english_level, userRequested, instructions, content_text, cantidad, response_type, question_difficulty, existing_questions)
+    if (prompt == None):
+        return None
     
     response = client.chat.completions.create(
         model="gpt-4.1",  

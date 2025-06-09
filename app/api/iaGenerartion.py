@@ -30,7 +30,7 @@ async def generate_question_endpoint(
     try:
         question = await generate_question(
             exercise_id=genData.exercise_id,
-            cantidad=genData.cantidad,
+            cantidad=genData.quantity,
             response_type=genData.response_type,
             question_difficulty=genData.question_difficulty,
             userRequested=genData.userRequested,
