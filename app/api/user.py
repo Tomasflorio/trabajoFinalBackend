@@ -2,9 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
-from app.services.user_service import delete_user_router, update_user_router
+from app.services.user_service import delete_user_router, update_user_router, get_all_students
+from typing import List
+from app.models.user import User
 
 router = APIRouter()
+
+@router.get("/students", response_model=List[dict])
+async def get_students(db: AsyncSession = Depends(get_db)):
+    students = await get_all_students(db)
+    return [{
+        "id": student.id, 
+        "name": student.name, 
+        "email": student.email, 
+        "points": student.points,
+        "englishLevel": student.englishLevel.value if student.englishLevel else None
+    } for student in students]
 
 @router.delete("/{user_id}")
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
