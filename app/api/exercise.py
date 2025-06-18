@@ -103,7 +103,20 @@ async def update_exercise(exercise_id: int, updates: dict, db: AsyncSession = De
     updated_exercise = await update_exercise_router(db, exercise_id, updates)
     if not updated_exercise:
         raise HTTPException(status_code=404, detail="Exercise not found")
-    return updated_exercise
+    return {
+        "message": "Exercise updated successfully",
+        "exercise": {
+            "id": updated_exercise.id,
+            "title": updated_exercise.title,
+            "type": updated_exercise.type.value if hasattr(updated_exercise.type, "value") else str(updated_exercise.type),
+            "level": updated_exercise.level.value if hasattr(updated_exercise.level, "value") else str(updated_exercise.level),
+            "valid": updated_exercise.valid,
+            "instructions": updated_exercise.instructions,
+            "content_text": updated_exercise.content_text,
+            "content_audio_url": updated_exercise.content_audio_url
+        },
+        "status": 200
+    }
 
 @router.get("/{exercise_id}", response_model=exerciseResponse)
 async def get_exercise(exercise_id: int, db: AsyncSession = Depends(get_db)):
