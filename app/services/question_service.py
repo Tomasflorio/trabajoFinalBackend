@@ -50,3 +50,14 @@ async def add_options_to_question(db: AsyncSession, question_id: int, options: L
         .where(Question.id == question_id)
     )
     return result.scalar_one()
+
+async def update_question_service(db: AsyncSession, question_id: int, question_data: QuestionCreate):
+    result = await db.execute(select(Question).filter_by(id=question_id))
+    question = result.scalar_one_or_none()
+    if not question:
+        return None
+    for key, value in question_data.model_dump(exclude_unset=True).items():
+        setattr(question, key, value)
+    await db.commit()
+    await db.refresh(question)
+    return question
