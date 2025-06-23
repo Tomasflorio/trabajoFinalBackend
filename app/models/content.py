@@ -4,8 +4,11 @@ from sqlalchemy.orm import declarative_base
 from .base import Base
 
 
-class Thematic(Enum):
-    ALGO = "TBD"
+class Thematic(str, Enum):
+    technology = "technology"
+    science = "science"
+    literature = "literature"
+    art = "art"
 
 
 
