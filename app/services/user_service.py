@@ -60,3 +60,7 @@ async def update_user_router(db: AsyncSession, user_id: int, updates: dict):
     await db.refresh(user)
     return user
 
+async def get_all_students(db: AsyncSession):
+    result = await db.execute(select(User).filter(User.isAdmin == False))
+    students = result.scalars().all()
+    return students
