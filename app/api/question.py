@@ -6,13 +6,28 @@ from typing import List
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.services.question_service import create_question_service, get_questions_by_exercise, add_options_to_question
+from app.services.question_service import create_question_service, get_questions_by_exercise, add_options_to_question, update_question_service
 from app.schemas.question import QuestionCreate, QuestionOut
 
 router = APIRouter()
 
 class OptionsCreate(BaseModel):
     options: List[str]
+
+
+@router.put("/{question_id}", response_model=QuestionOut)
+async def update_question(question_id: int, question: QuestionCreate, db: AsyncSession = Depends(get_db)):
+    updated = await update_question_service(db, question_id, question)
+    return QuestionOut(
+        id=updated.id,
+        question_text=updated.question_text,
+        correct_answer=updated.correct_answer,
+        explanation=updated.explanation,
+        order=updated.order,
+        points=updated.points,
+        difficulty=updated.difficulty,
+        options=updated.options
+    )
 
 @router.post("/create/{exercise_id}", response_model=QuestionOut)
 async def create_question(exercise_id: int, question: QuestionCreate, db: AsyncSession = Depends(get_db)):
@@ -30,7 +45,7 @@ async def create_question(exercise_id: int, question: QuestionCreate, db: AsyncS
         order=question_with_options.order,
         points=question_with_options.points,  # <-- agrega esto
         difficulty=question_with_options.difficulty,  # <-- agrega esto
-        options=[opt.option_text for opt in question_with_options.options]
+        options=question_with_options.options
     )
 
 @router.get("/list/{exercise_id}", response_model=list[QuestionOut])
@@ -45,7 +60,7 @@ async def list_questions_by_exercise(exercise_id: int, db: AsyncSession = Depend
             order=q.order,
             points=q.points,  # <-- agrega esto
             difficulty=q.difficulty,  # <-- agrega esto
-            options=[opt.option_text for opt in q.options]
+            options=q.options
         )
         for q in questions
     ]
@@ -66,5 +81,6 @@ async def add_options_to_question_endpoint(
         order=question.order,
         points=question.points,
         difficulty=question.difficulty,
-        options=[opt.option_text for opt in question.options]
+        options=question.options
     )
+
