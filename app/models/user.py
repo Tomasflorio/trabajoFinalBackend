@@ -24,3 +24,4 @@ class User(Base):
 
     # Relaciones
     exercise_responses = relationship("UserExerciseResponse", back_populates="user", cascade="all, delete-orphan")
+    assigned_content = relationship("Content", secondary="content_user_assignment", back_populates="assigned_users")
