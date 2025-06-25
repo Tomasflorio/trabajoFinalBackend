@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession  # Importamos AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.user_service import create_user, authenticate_user, delete_user_router, update_user_router
-from app.schemas.user import LoginRequest, UserCreate, RegisterResponse
+from app.services.user_service import create_user, authenticate_user, delete_user_router, update_user_router, request_password_reset, reset_password_with_token, validate_reset_token
+from app.schemas.user import LoginRequest, UserCreate, RegisterResponse, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse, ValidateTokenRequest
 from app.models.user import User
 
 router = APIRouter()
@@ -44,3 +44,33 @@ async def login_user(data: LoginRequest, db: AsyncSession = Depends(get_db)):
         "englishLevel": user.englishLevel
     }
     return {"message": "Login successful", "user": user_response, "status": 200}
+
+@router.post("/forgot-password", response_model=PasswordResetResponse)
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Solicita el recupero de contraseña enviando un email con token"""
+    success, message = await request_password_reset(db, request.email)
+    
+    if success:
+        return {"message": message, "status": 200}
+    else:
+        raise HTTPException(status_code=400, detail=message)
+
+@router.post("/validate-token", response_model=PasswordResetResponse)
+async def validate_token(request: ValidateTokenRequest, db: AsyncSession = Depends(get_db)):
+    """Valida el token de recupero de contraseña"""
+    success, message = await validate_reset_token(db, request.token)
+    
+    if success:
+        return {"message": message, "status": 200}
+    else:
+        raise HTTPException(status_code=400, detail=message)
+
+@router.post("/reset-password", response_model=PasswordResetResponse)
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Resetea la contraseña usando el token proporcionado"""
+    success, message = await reset_password_with_token(db, request.token, request.new_password)
+    
+    if success:
+        return {"message": message, "status": 200}
+    else:
+        raise HTTPException(status_code=400, detail=message)

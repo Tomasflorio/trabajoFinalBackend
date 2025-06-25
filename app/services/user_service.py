@@ -5,6 +5,8 @@ from app.utils.security import hash_password, verify_password
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
+from app.services.email_service import email_service
+from datetime import datetime
 
 def isAdmin(email: str):
     return email.split('@')[1]=='caece.edu.com'
@@ -64,3 +66,74 @@ async def get_all_students(db: AsyncSession):
     result = await db.execute(select(User).filter(User.isAdmin == False))
     students = result.scalars().all()
     return students
+
+# Funciones para recupero de contraseña
+async def request_password_reset(db: AsyncSession, email: str):
+    """Solicita el recupero de contraseña enviando un email con token"""
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+    
+    if not user:
+        return False, "Usuario no encontrado"
+    
+    # Verificar si el email está configurado
+    if not email_service.email_configured:
+        return False, "Sistema de email no configurado. Contacta al administrador."
+    
+    # Generar token y fecha de expiración
+    reset_token = email_service.generate_reset_token()
+    token_expires = email_service.get_token_expiration()
+    
+    # Actualizar usuario con el token
+    user.reset_token = reset_token
+    user.reset_token_expires = token_expires
+    
+    await db.commit()
+    
+    # Enviar email
+    try:
+        await email_service.send_password_reset_email(email, reset_token, user.name)
+        return True, "Email de recupero enviado exitosamente"
+    except Exception as e:
+        # Si falla el envío, limpiar el token
+        user.reset_token = None
+        user.reset_token_expires = None
+        await db.commit()
+        return False, f"Error al enviar email: {str(e)}"
+
+async def validate_reset_token(db: AsyncSession, token: str):
+    """Valida el token de recupero de contraseña sin resetearlo"""
+    result = await db.execute(
+        select(User).where(
+            User.reset_token == token,
+            User.reset_token_expires > datetime.utcnow()
+        )
+    )
+    user = result.scalars().first()
+    
+    if not user:
+        return False, "Token inválido o expirado"
+    
+    return True, "Token válido"
+
+async def reset_password_with_token(db: AsyncSession, token: str, new_password: str):
+    """Resetea la contraseña usando el token proporcionado"""
+    result = await db.execute(
+        select(User).where(
+            User.reset_token == token,
+            User.reset_token_expires > datetime.utcnow()
+        )
+    )
+    user = result.scalars().first()
+    
+    if not user:
+        return False, "Token inválido o expirado"
+    
+    # Actualizar contraseña y limpiar token
+    user.password = hash_password(new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    
+    await db.commit()
+    
+    return True, "Contraseña actualizada exitosamente"

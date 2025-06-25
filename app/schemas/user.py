@@ -17,6 +17,21 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+# Esquemas para recupero de contraseña
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ValidateTokenRequest(BaseModel):
+    token: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class PasswordResetResponse(BaseModel):
+    message: str
+    status: int
+
     
 # Esquema para leer un usuario (sin contraseña por seguridad)
 class UserRead(BaseModel):
