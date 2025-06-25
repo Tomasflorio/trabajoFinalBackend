@@ -206,3 +206,22 @@ async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
         })
     
     return formatted_exercises
+
+async def reject_exercise_router(db: AsyncSession, exercise_id: int):
+    result = await db.execute(select(Exercise).filter_by(id=exercise_id))
+    exercise = result.scalar_one_or_none()
+    if not exercise:
+        return None
+    exercise.valid = False
+    await db.commit()
+    await delete_exercise_router(db, exercise_id)
+    return True
+
+async def approve_exercise_router(db: AsyncSession, exercise_id: int):
+    result = await db.execute(select(Exercise).filter_by(id=exercise_id))
+    exercise = result.scalar_one_or_none()
+    if not exercise:
+        return None
+    exercise.valid = True
+    await db.commit()
+    return True
