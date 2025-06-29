@@ -118,3 +118,28 @@ async def get_all_content_with_users(db: AsyncSession):
             assigned_users=user_ids
         ))
     return content_with_users
+
+async def get_content_by_user_id(db: AsyncSession, user_id: int):
+    # Obtener los contenidos asignados al usuario usando la tabla intermedia
+    query = text("""
+        SELECT c.* FROM content c
+        INNER JOIN content_user_assignment cua ON c.id = cua.content_id
+        WHERE cua.user_id = :user_id
+    """)
+    
+    result = await db.execute(query, {"user_id": user_id})
+    contents = result.fetchall()
+    
+    # Convertir los resultados a objetos Content
+    content_list = []
+    for row in contents:
+        content = Content(
+            id=row[0],
+            thematic=row[1],
+            link=row[2],
+            title=row[3],
+            img=row[4]
+        )
+        content_list.append(content)
+    
+    return content_list

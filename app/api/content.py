@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
-from app.services.content_service import get_content, create_content, assign_users_to_content, get_content_with_users, get_all_content_with_users, check_link_exists, generate_unique_link
+from app.services.content_service import get_content, create_content, assign_users_to_content, get_content_with_users, get_all_content_with_users, check_link_exists, generate_unique_link, get_content_by_user_id
 from app.services.file_service import file_service
 from app.schemas.content import ContentCreate, ContentUserAssignment, ContentWithUsers
 from app.core.firebase_config import firebase_config
@@ -265,3 +265,9 @@ async def check_link_exists_endpoint(link: str, db: AsyncSession = Depends(get_d
         "exists": exists,
         "message": "Link ya existe" if exists else "Link disponible"
     }
+
+@router.get("/getbyuser/{user_id}")
+async def get_content_by_user_id_endpoint(user_id: int, db: AsyncSession = Depends(get_db)):
+    from app.services.content_service import get_content_by_user_id
+    content = await get_content_by_user_id(db, user_id)
+    return content
