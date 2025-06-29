@@ -64,3 +64,8 @@ async def get_all_students(db: AsyncSession):
     result = await db.execute(select(User).filter(User.isAdmin == False))
     students = result.scalars().all()
     return students
+
+async def get_student_by_id(db: AsyncSession, student_id: int):
+    result = await db.execute(select(User).filter(User.id == student_id, User.isAdmin == False))
+    student = result.scalar_one_or_none()
+    return student
