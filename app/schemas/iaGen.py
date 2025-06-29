@@ -7,7 +7,8 @@ class ExerciseGenerationRequest(BaseModel):
     prompt: str
 
 class QuestionGenerationRequest(BaseModel):
-    cantidad: int
+    exercise_id: int
+    quantity: int
     response_type: str
     question_difficulty: str
     exercise_id: int
