@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     
     # Configuración para tokens de recupero
     RESET_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # Configuración de Firebase Storage
+    FIREBASE_STORAGE_BUCKET: Optional[str] = None
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
 
     class Config:
         env_file = ".env"  
