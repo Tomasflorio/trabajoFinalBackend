@@ -11,6 +11,13 @@ class OptionCreate(BaseModel):
     option_text: str
     is_correct: bool = False
 
+class OptionOut(BaseModel):
+    option_text: str
+    is_correct: bool
+
+    class Config:
+        from_attributes = True
+
 class QuestionCreate(BaseModel):
     question_text: str
     correct_answer: Optional[str] = None
@@ -28,7 +35,7 @@ class QuestionOut(BaseModel):
     order: int
     points: int
     difficulty: DifficultyLevel
-    options: List[str]
+    options: List[OptionOut]
 
     class Config:
         from_attributes = True

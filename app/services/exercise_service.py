@@ -128,6 +128,12 @@ async def get_all_exercises(db: AsyncSession):
     for exercise in exercises:
         formatted_questions = []
         for question in exercise.questions:
+            options = []
+            for option in question.options:
+                options.append({
+                    'option_text': option.option_text,
+                    'is_correct': option.is_correct
+                })
             formatted_questions.append({
                 'id': question.id,
                 'question_text': question.question_text,
@@ -136,7 +142,7 @@ async def get_all_exercises(db: AsyncSession):
                 'order': question.order,
                 'points': question.points,
                 'difficulty': question.difficulty,
-                'options': [opt.option_text for opt in question.options]  # Convertir objetos Option a strings
+                'options':  options  # Convertir objetos Option a strings
             })
         
         formatted_exercises.append({
@@ -180,7 +186,7 @@ async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
                 'order': question.order,
                 'points': question.points,
                 'difficulty': question.difficulty,
-                'options': options
+                'options': options  # Ahora devuelve toda la información de las opciones
             })
         
         formatted_exercises.append({
@@ -200,3 +206,22 @@ async def get_exercises_by_type_router(db: AsyncSession, exercise_type: str):
         })
     
     return formatted_exercises
+
+async def reject_exercise_router(db: AsyncSession, exercise_id: int):
+    result = await db.execute(select(Exercise).filter_by(id=exercise_id))
+    exercise = result.scalar_one_or_none()
+    if not exercise:
+        return None
+    exercise.valid = False
+    await db.commit()
+    await delete_exercise_router(db, exercise_id)
+    return True
+
+async def approve_exercise_router(db: AsyncSession, exercise_id: int):
+    result = await db.execute(select(Exercise).filter_by(id=exercise_id))
+    exercise = result.scalar_one_or_none()
+    if not exercise:
+        return None
+    exercise.valid = True
+    await db.commit()
+    return True

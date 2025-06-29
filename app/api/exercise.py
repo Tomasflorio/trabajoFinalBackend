@@ -8,7 +8,9 @@ from app.services.exercise_service import (
     get_full_exercise,
     update_exercise_router,
     get_all_exercises,
-    get_exercises_by_type_router
+    get_exercises_by_type_router,
+    reject_exercise_router,
+    approve_exercise_router
 )
 from app.schemas.exercise import (
     exerciseCreate,
@@ -142,3 +144,12 @@ async def get_exercises_by_type(exercise_type: str, db: AsyncSession = Depends(g
     exercises = await get_exercises_by_type_router(db, exercise_type)
     return exercises
 
+@router.post("/reject/{exercise_id}")
+async def reject_exercise(exercise_id: int, db: AsyncSession = Depends(get_db)):
+    await reject_exercise_router(db, exercise_id)
+    return {"message": "Ejercicio rechazado y eliminado"}
+
+@router.post("/approve/{exercise_id}")
+async def approve_exercise(exercise_id: int, db: AsyncSession = Depends(get_db)):
+    await approve_exercise_router(db, exercise_id)
+    return {"message": "Ejercicio aprobado y activado"}

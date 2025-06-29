@@ -7,6 +7,7 @@ from app.models.question import Question
 from app.models.option import Option
 from app.models.user import User
 from app.schemas.exercise_response import UserExerciseResponseCreate
+from app.services.ia_generation_service import analyze_text_response
 from typing import List
 import re
 import logging
@@ -78,9 +79,11 @@ async def create_exercise_response(
 
         # Procesar cada respuesta
         for answer_data in response_data.answers:
-            # Obtener la pregunta
+            # Obtener la pregunta con sus opciones
             result = await db.execute(
-                select(Question).where(Question.id == answer_data.question_id)
+                select(Question)
+                .options(selectinload(Question.options))
+                .where(Question.id == answer_data.question_id)
             )
             question = result.scalar_one_or_none()
             
@@ -110,11 +113,26 @@ async def create_exercise_response(
                 else:
                     logger.error(f"Option {answer_data.option_id} not found for question {answer_data.question_id}")
                     continue
-            # Si se proporcionó texto, verificar como antes
+            # Si se proporcionó texto, verificar si la pregunta tiene opciones
             elif answer_data.answer_text:
-                is_correct = check_answer(answer_data.answer_text, question.correct_answer)
-                points_earned = question.points if is_correct else 0
-                logger.info(f"Text answer: {answer_data.answer_text}, is_correct: {is_correct}")
+                # Si la pregunta no tiene opciones, usar análisis de IA
+                if not question.options:
+                    logger.info("Question has no options, using AI analysis")
+                    ai_analysis = await analyze_text_response(
+                        question_text=question.question_text,
+                        correct_answer=question.correct_answer,
+                        user_answer=answer_data.answer_text,
+                        explanation=question.explanation
+                    )
+                    is_correct = ai_analysis["is_correct"]
+                    # Calcular puntos basados en el porcentaje de acierto
+                    points_earned = int((ai_analysis["score_percentage"] / 100) * question.points)
+                    logger.info(f"AI analysis result: {ai_analysis}")
+                else:
+                    # Si tiene opciones pero el usuario respondió texto, usar comparación básica
+                    is_correct = check_answer(answer_data.answer_text, question.correct_answer)
+                    points_earned = question.points if is_correct else 0
+                    logger.info(f"Text answer with options available: {answer_data.answer_text}, is_correct: {is_correct}")
             
             logger.info(f"Answer is {'correct' if is_correct else 'incorrect'}")
             
@@ -172,7 +190,7 @@ async def get_exercise_response(
         .options(selectinload(UserExerciseResponse.answers))
         .where(UserExerciseResponse.id == response_id)
     )
-    return result.scalar_one_or_none() 
+    return result.scalar_one_or_none()
 
 async def update_user_level(
     db: AsyncSession,
@@ -228,3 +246,76 @@ CONST_LEVELS_RANGES = {
     'C1': (1201, 1500),
     'C2': (1501, float('inf'))
 }
+
+async def get_answer_feedback(
+    db: AsyncSession,
+    response_id: int,
+    question_id: int
+) -> dict:
+    """
+    Obtiene el feedback detallado de una respuesta específica.
+    Si la pregunta no tiene opciones, re-analiza la respuesta con IA.
+    """
+    try:
+        # Obtener la respuesta del usuario
+        result = await db.execute(
+            select(UserAnswer)
+            .where(
+                UserAnswer.exercise_response_id == response_id,
+                UserAnswer.question_id == question_id
+            )
+        )
+        user_answer = result.scalar_one_or_none()
+        
+        if not user_answer:
+            return None
+        
+        # Obtener la pregunta con sus opciones
+        result = await db.execute(
+            select(Question)
+            .options(selectinload(Question.options))
+            .where(Question.id == question_id)
+        )
+        question = result.scalar_one_or_none()
+        
+        if not question:
+            return None
+        
+        # Si la pregunta no tiene opciones y hay texto de respuesta, re-analizar con IA
+        if not question.options and user_answer.answer_text:
+            logger.info("Re-analyzing text response with AI for detailed feedback")
+            ai_analysis = await analyze_text_response(
+                question_text=question.question_text,
+                correct_answer=question.correct_answer,
+                user_answer=user_answer.answer_text,
+                explanation=question.explanation
+            )
+            
+            return {
+                "question_id": question.id,
+                "question_text": question.question_text,
+                "user_answer": user_answer.answer_text,
+                "correct_answer": question.correct_answer,
+                "is_correct": ai_analysis["is_correct"],
+                "score_percentage": ai_analysis["score_percentage"],
+                "feedback": ai_analysis["feedback"],
+                "points_earned": int((ai_analysis["score_percentage"] / 100) * question.points),
+                "total_points": question.points
+            }
+        else:
+            # Para preguntas con opciones o sin texto de respuesta, devolver información básica
+            return {
+                "question_id": question.id,
+                "question_text": question.question_text,
+                "user_answer": user_answer.answer_text or "Opción seleccionada",
+                "correct_answer": question.correct_answer,
+                "is_correct": user_answer.is_correct,
+                "score_percentage": 100 if user_answer.is_correct else 0,
+                "feedback": "Respuesta evaluada automáticamente",
+                "points_earned": user_answer.points_earned,
+                "total_points": question.points
+            }
+            
+    except Exception as e:
+        logger.error(f"Error getting answer feedback: {str(e)}")
+        return None

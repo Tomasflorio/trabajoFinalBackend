@@ -1,10 +1,30 @@
 from openai import OpenAI
 import os
 import json
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.exercise import Exercise
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
+
+# Configurar el logger
+logger = logging.getLogger(__name__)
+
+def check_answer(user_answer: str, correct_answer: str) -> bool:
+    """Verifica si la respuesta del usuario es correcta usando comparación básica."""
+    if not user_answer or not correct_answer:
+        return False
+    
+    # Convertir a minúsculas y eliminar espacios
+    user_answer = user_answer.lower().strip()
+    correct_answers = [ans.lower().strip() for ans in correct_answer.split('|')]
+    
+    # Verificar cada respuesta correcta
+    for correct in correct_answers:
+        if user_answer == correct:
+            return True
+    
+    return False
 
 def generateExercisePrompt(exercise_type, english_level, title, userRequest, valid=False):
     
@@ -145,3 +165,76 @@ async def generate_question(cantidad, response_type, question_difficulty, userRe
     output = response.choices[0].message.content.strip()
     question_json = json.loads(output)
     return question_json
+
+async def analyze_text_response(
+    question_text: str,
+    correct_answer: str,
+    user_answer: str,
+    explanation: str = None
+) -> dict:
+    """
+    Analiza una respuesta de texto libre usando IA para determinar si es correcta.
+    
+    Args:
+        question_text: El texto de la pregunta
+        correct_answer: La respuesta correcta esperada
+        user_answer: La respuesta del usuario
+        explanation: Explicación de la respuesta correcta (opcional)
+    
+    Returns:
+        dict: Contiene 'is_correct' (bool), 'score_percentage' (int), y 'feedback' (str)
+    """
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    prompt = f"""
+    Eres un evaluador experto de ejercicios de inglés. Tu tarea es evaluar si la respuesta del estudiante es correcta.
+
+    Pregunta: {question_text}
+    Respuesta correcta esperada: {correct_answer}
+    Respuesta del estudiante: {user_answer}
+    {f"Explicación de la respuesta correcta: {explanation}" if explanation else ""}
+
+    Evalúa la respuesta del estudiante considerando:
+    1. Corrección gramatical
+    2. Precisión semántica
+    3. Coherencia con la pregunta
+    4. Variaciones aceptables de la respuesta correcta
+    5. Errores menores que no afectan la comprensión
+
+    Responde en formato JSON con la siguiente estructura:
+    {{
+        "is_correct": true/false,
+        "score_percentage": 0-100,
+        "feedback": "Explicación detallada de por qué la respuesta es correcta o incorrecta, incluyendo sugerencias de mejora si es necesario"
+    }}
+
+    Sé justo pero riguroso. Si la respuesta es conceptualmente correcta pero tiene errores menores, considera darle una puntuación parcial.
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "Eres un evaluador experto de ejercicios de inglés. Responde siempre en formato JSON válido."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3
+        )
+        
+        output = response.choices[0].message.content.strip()
+        result = json.loads(output)
+        
+        return {
+            "is_correct": result.get("is_correct", False),
+            "score_percentage": result.get("score_percentage", 0),
+            "feedback": result.get("feedback", "No se pudo evaluar la respuesta")
+        }
+        
+    except Exception as e:
+        # En caso de error, usar evaluación básica como fallback
+        logger.error(f"Error al analizar respuesta con IA: {str(e)}")
+        return {
+            "is_correct": check_answer(user_answer, correct_answer),
+            "score_percentage": 100 if check_answer(user_answer, correct_answer) else 0,
+            "feedback": "Evaluación automática debido a error en el análisis de IA"
+        }

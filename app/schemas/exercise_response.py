@@ -33,4 +33,15 @@ class UserExerciseResponseRead(BaseModel):
     answers: List[UserAnswerRead]
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
+
+class AnswerFeedback(BaseModel):
+    question_id: int
+    question_text: str
+    user_answer: str
+    correct_answer: str
+    is_correct: bool
+    score_percentage: int
+    feedback: str
+    points_earned: int
+    total_points: int 
